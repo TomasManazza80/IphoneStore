@@ -1,19 +1,19 @@
 const userService = require("../services/userServices");
 const AllValidation = require("../validation/AllValidation");
 
+
 const loginUser = async (req, res) => {
   try {
     const userdata = req.body;
-    const { value, error } = AllValidation.fatchUser.validate(userdata);
-    if (error !== undefined) {
-      console.log("error", error);
-      res.status(400).send(error.details[0].message);
+    const user = await userService.getUserByEmail(userdata.email);
+    if (!user) {
+      res.status(401).send("Usuario no encontrado");
     } else {
-      const response = await userService.login(value);
-      if (response === "NOT FOUND!" || response === "Password wrong!") {
-        res.status(401).send(response);
+      const isValidPassword = await compareHash({ userPass: userdata.password, dbPass: user.password });
+      if (isValidPassword) {
+        res.send("Login exitoso");
       } else {
-        res.send(response);
+        res.status(401).send("Contraseña incorrecta");
       }
     }
   } catch (error) {
@@ -22,21 +22,14 @@ const loginUser = async (req, res) => {
   }
 };
 
+
 const createUser = async (req, res) => {
   try {
     const userdata = req.body;
-    const { value, error } = AllValidation.createUser.validate(userdata);
-    if (error !== undefined) {
-      console.log("error", error);
-      res.status(400).send(error.details[0].message);
-    } else {
-      const user = await userService.createUser(value);
-      if (!user) {
-        res.sendStatus(401);
-      } else {
-        res.sendStatus(200);
-      }
-    }
+    const hashedPassword = await authHash(userdata);
+    userdata.password = hashedPassword;
+    const user = await userService.createUser(userdata);
+    res.send(user);
   } catch (error) {
     console.log(error);
     res.status(500).send("Internal Server Error");
