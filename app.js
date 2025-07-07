@@ -14,7 +14,7 @@ var paymentRouter = require("./routes/paymentRoutes");  // Agregar esta línea
 var vexor = require("vexor");
 const productBought = require("./routes/productBoughtRoute");
 const { Vexor } = vexor;
-const API_URL = process.env.API_URL;
+
 
 
 var app = express();
@@ -40,14 +40,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 
-app.use(`${API_URL}/`, indexRouter);
-app.use(`${API_URL}/`, usersRouter);
-app.use(`${API_URL}/product`, productRouter);
+app.use(`/`, indexRouter);
+app.use(`/`, usersRouter);
+app.use(`/product`, productRouter);
  
-app.use(`${API_URL}/payment`, paymentRouter);
+app.use(`/payment`, paymentRouter);
 
-app.use(`${API_URL}/products`, productRouter);
-app.use(`${API_URL}/boughtProduct`, productBought);
+app.use(`/products`, productRouter);
+app.use(`/boughtProduct`, productBought);
 
 
 // catch 404 and forward to error handler
