@@ -1,6 +1,6 @@
 const userService = require("../services/userServices");
 const AllValidation = require("../validation/AllValidation");
-
+const { compareHash } = require('../services/auth/auth');
 
 const loginUser = async (req, res) => {
   try {
