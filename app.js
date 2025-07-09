@@ -45,7 +45,7 @@ app.use(cors());
 
 app.use(`/`, indexRouter);
 app.use(`/`, usersRouter);
-app.use(`/products`, productRouter);
+app.use(`/`, productRouter);
 app.use(`/payment`, paymentRouter);
 app.use(`/boughtProduct`, productBought);
 

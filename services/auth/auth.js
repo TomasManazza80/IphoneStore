@@ -1,36 +1,77 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+require('dotenv').config(); // Para manejar variables de entorno
 
-async function authHash(argu) {
-  const salt = await bcrypt.genSalt(10);
-  const hashpassword = await bcrypt.hash(argu.password, salt);
-  console.log("hashPassword!:", hashpassword);
-  return hashpassword;
+// Configuración segura
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_should_be_long_and_complex_in_env';
+const SALT_ROUNDS = 10;
+const TOKEN_EXPIRATION = '1h'; // 1 hora para tokens de acceso (usar refresh tokens para sesiones largas)
+
+async function authHash(password) {
+  try {
+    if (!password) throw new Error("Password is required");
+    const salt = await bcrypt.genSalt(SALT_ROUNDS);
+    const hashpassword = await bcrypt.hash(password, salt);
+    return hashpassword;
+  } catch (err) {
+    console.error("Error hashing password:", err);
+    throw err; // Propaga el error para manejo superior
+  }
 }
 
-async function compareHash(Pass) {
+async function compareHash(userPass, dbPass) {
   try {
-    const res = await bcrypt.compare(Pass.userPass, Pass.dbPass);
-    return res;
+    if (!userPass || !dbPass) throw new Error("Both passwords are required for comparison");
+    const isMatch = await bcrypt.compare(userPass, dbPass);
+    return isMatch;
   } catch (err) {
-    console.log("Error comparing passwords:", err);
+    console.error("Error comparing passwords:", err);
     throw err;
   }
 }
 
-async function createToken(argu) {
-  console.log("MYARGU:", argu);
-  const token = await jwt.sign({
-    email: argu.email,
-    password: argu.password,
-    nombre: argu.nombre,
-    apellido: argu.apellido,
-    rol: argu.rol
-  }, "mysecretkeyofcreatingtoken", {
-    expiresIn: 604800,
-  });
-  console.log("TOKEN FROM AUTH!", token);
-  return token;
+async function createToken(userData) {
+  try {
+    if (!userData) throw new Error("User data is required");
+    if (!JWT_SECRET || JWT_SECRET === 'fallback_secret_should_be_long_and_complex_in_env') {
+      console.warn("Warning: Using fallback JWT secret. This should be replaced with a proper secret in production.");
+    }
+
+    // Solo incluir datos necesarios en el token
+    const payload = {
+      email: userData.email,
+      userId: userData.id, // Mejor usar ID que datos sensibles
+      rol: userData.rol
+      // Evita incluir: password, información personal sensible
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET, {
+      expiresIn: TOKEN_EXPIRATION,
+      algorithm: 'HS256' // Especifica el algoritmo
+    });
+
+    return token;
+  } catch (err) {
+    console.error("Error creating token:", err);
+    throw err;
+  }
 }
 
-module.exports = { authHash, createToken, compareHash };
+// Función adicional recomendada para verificar tokens
+async function verifyToken(token) {
+  try {
+    if (!token) throw new Error("Token is required");
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded;
+  } catch (err) {
+    console.error("Token verification failed:", err);
+    throw err;
+  }
+}
+
+module.exports = { 
+  authHash, 
+  createToken, 
+  compareHash,
+  verifyToken // Exportamos la nueva función
+};

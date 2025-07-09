@@ -76,16 +76,6 @@ const getAllUsers = async () => {
   }
 };
 
-const getUserByEmail = async (email) => {
-  try {
-    const user = await model.user.findOne({ where: { email } });
-    return user;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-
 const updateUser = async (data) => {
   try {
     const user = await model.user.findByPk(data.id);
@@ -100,7 +90,6 @@ const updateUser = async (data) => {
   }
 };
 
-
 const deleteUser = async () => {};
 
-module.exports = { login, createUser, updateUser, deleteUser, getRoleByEmail, getAllUsers, getUserByEmail};
+module.exports = { login, createUser, updateUser, deleteUser, getRoleByEmail, getAllUsers };
