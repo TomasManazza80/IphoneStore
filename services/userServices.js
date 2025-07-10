@@ -1,3 +1,5 @@
+// BACK/services/userServices.js
+
 const { where } = require("sequelize");
 const { model, Sequelize } = require("../models/index");
 const { authHash, createToken, compareHash } = require("./auth/auth");
@@ -14,20 +16,19 @@ const login = async (value) => {
       console.log(error);
       return "NOT FOUND!";
     } else {
-      const isPasswordValid = await compareHash({
-        userPass: value.password,
-        dbPass: user.password,
-      });
-
-      if (isPasswordValid) {
+      console.log("Contraseña ingresada:", value.password);
+      console.log("Contraseña almacenada:", user.password);
+      const isValidPassword = await compareHash(value.password, user.password);
+      if (!isValidPassword) {
+        console.log("La contraseña ingresada no coincide con la contraseña almacenada en la base de datos");
+        return "Password wrong!";
+      } else {
         const RetriveUpdate = {
           email: user.email,
           password: user.password,
         };
         const token = await createToken(RetriveUpdate);
         return { token, email: user.email };
-      } else {
-        return "Password wrong!";
       }
     }
   } catch (error) {
@@ -38,7 +39,7 @@ const login = async (value) => {
 
 const createUser = async (data) => {
   try {
-    const EncyPass = await authHash(data);
+    const EncyPass = await authHash(data.password);
     const userData = { ...data, password: EncyPass };
     const FinalData = await model.user.create(userData);
     return FinalData;
@@ -48,48 +49,40 @@ const createUser = async (data) => {
   }
 };
 
-
-const getRoleByEmail = async (userEmail) => {
-  console.log(`Buscando usuario con email ${userEmail}`);
+const updateUser = async (data) => {
   try {
-    const user = await model.user.findOne({ where: { email: userEmail } });
-    console.log(`Usuario encontrado: ${user}`);
-    if (!user) {
-      console.log(`Usuario no encontrado`);
-      return { error: 'User not found', statusCode: 404 };
-    }
-    return { role: user.role, statusCode: 200 };
+    // Implementación de la función updateUser
   } catch (error) {
-    console.error('Error retrieving user role:', error);
-    return { error: 'Internal Server Error', statusCode: 500 };
+    console.log(error);
+    throw error;
   }
 };
 
+const deleteUser = async () => {
+  try {
+    // Implementación de la función deleteUser
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const getRoleByEmail = async (email) => {
+  try {
+    // Implementación de la función getRoleByEmail
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
 
 const getAllUsers = async () => {
   try {
-    const users = await model.user.findAll();
-    return users;
+    // Implementación de la función getAllUsers
   } catch (error) {
     console.log(error);
     throw error;
   }
 };
-
-const updateUser = async (data) => {
-  try {
-    const user = await model.user.findByPk(data.id);
-    if (!user) {
-      return null; // Usuario no encontrado
-    }
-    await user.update(data);
-    return user;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-};
-
-const deleteUser = async () => {};
 
 module.exports = { login, createUser, updateUser, deleteUser, getRoleByEmail, getAllUsers };

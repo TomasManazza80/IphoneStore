@@ -7,17 +7,16 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_should_be_long_and
 const SALT_ROUNDS = 10;
 const TOKEN_EXPIRATION = '1h'; // 1 hora para tokens de acceso (usar refresh tokens para sesiones largas)
 
-async function authHash(password) {
+const authHash = async (password) => {
   try {
-    if (!password) throw new Error("Password is required");
-    const salt = await bcrypt.genSalt(SALT_ROUNDS);
-    const hashpassword = await bcrypt.hash(password, salt);
-    return hashpassword;
-  } catch (err) {
-    console.error("Error hashing password:", err);
-    throw err; // Propaga el error para manejo superior
+    const hash = await bcrypt.hash(password, 10);
+    console.log("Contraseña hasheada:", hash);
+    return hash;
+  } catch (error) {
+    console.log(error);
+    throw error;
   }
-}
+};
 
 async function compareHash(userPass, dbPass) {
   try {
