@@ -13,7 +13,7 @@ const login = async (value) => {
     });
 
     if (!user) {
-      console.log(error);
+      console.log("NOT FOUND!");
       return "NOT FOUND!";
     } else {
       console.log("Contraseña ingresada:", value.password);
@@ -58,7 +58,7 @@ const updateUser = async (data) => {
     });
 
     if (!user) {
-      console.log(error);
+      console.log("NOT FOUND!");
       return "NOT FOUND!";
     } else {
       const hashedPassword = await authHash(data.password);
@@ -79,9 +79,19 @@ const updateUser = async (data) => {
   }
 };
 
-const deleteUser = async () => {
+const deleteUser = async (id) => {
   try {
-    // Implementación de la función deleteUser
+    const user = await model.user.destroy({
+      where: {
+        id,
+      },
+    });
+    if (!user) {
+      console.log("NOT FOUND!");
+      return "NOT FOUND!";
+    } else {
+      return "User deleted successfully";
+    }
   } catch (error) {
     console.log(error);
     throw error;
@@ -90,7 +100,17 @@ const deleteUser = async () => {
 
 const getRoleByEmail = async (email) => {
   try {
-    // Implementación de la función getRoleByEmail
+    const user = await model.user.findOne({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      console.log("NOT FOUND!");
+      return "NOT FOUND!";
+    } else {
+      return user.role;
+    }
   } catch (error) {
     console.log(error);
     throw error;
@@ -99,7 +119,8 @@ const getRoleByEmail = async (email) => {
 
 const getAllUsers = async () => {
   try {
-    // Implementación de la función getAllUsers
+    const users = await model.user.findAll();
+    return users;
   } catch (error) {
     console.log(error);
     throw error;
