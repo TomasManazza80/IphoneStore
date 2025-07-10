@@ -51,7 +51,28 @@ const createUser = async (data) => {
 
 const updateUser = async (data) => {
   try {
-    // Implementación de la función updateUser
+    const user = await model.user.findOne({
+      where: {
+        id: data.id,
+      },
+    });
+
+    if (!user) {
+      console.log(error);
+      return "NOT FOUND!";
+    } else {
+      const hashedPassword = await authHash(data.password);
+      const updatedUser = {
+        name: data.name,
+        number: data.number,
+        email: data.email,
+        password: hashedPassword,
+        role: data.role,
+      };
+
+      await user.update(updatedUser);
+      return updatedUser;
+    }
   } catch (error) {
     console.log(error);
     throw error;
